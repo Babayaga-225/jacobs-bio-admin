@@ -632,6 +632,399 @@ input { font-family: inherit; }
   margin-bottom: 20px;
 }
 
+/* ============ FAB (Floating Action Button) ============ */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  z-index: 60;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--charcoal);
+  color: var(--cream);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px -6px rgba(20,16,12,0.35), 0 2px 6px rgba(20,16,12,0.15);
+  border: 2px solid var(--gold);
+  transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
+}
+.fab:hover { transform: scale(1.05); box-shadow: 0 12px 28px -6px rgba(20,16,12,0.45); }
+.fab:active { transform: scale(0.95); }
+.fab svg { width: 26px; height: 26px; stroke: var(--gold-2); stroke-width: 2.4; }
+
+@supports (padding: max(0px)) {
+  .fab { bottom: max(24px, calc(env(safe-area-inset-bottom) + 20px)); }
+}
+
+/* ============ MODAL PLEIN ÉCRAN ============ */
+.modal-full {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--ivory);
+  display: none;
+  flex-direction: column;
+  animation: slideUp 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+.modal-full.open { display: flex; }
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.mf-header {
+  flex-shrink: 0;
+  background: var(--charcoal);
+  color: var(--cream);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+@supports (padding: max(0px)) {
+  .mf-header { padding-top: max(14px, env(safe-area-inset-top)); }
+}
+.mf-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.mf-title em { font-style: italic; color: var(--gold-2); }
+.mf-close {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: rgba(245,240,232,0.08);
+  color: var(--cream);
+  display: grid; place-items: center;
+  transition: background 0.2s;
+}
+.mf-close:hover { background: rgba(245,240,232,0.16); }
+.mf-close svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+.mf-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 16px 200px;
+}
+
+.mf-section {
+  margin-bottom: 22px;
+}
+.mf-section-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--charcoal);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mf-section-title em { font-style: italic; color: var(--gold-deep); }
+.mf-section-title .badge {
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--gold);
+  color: var(--cream);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.mf-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+/* Form fields */
+.mf-field { margin-bottom: 12px; position: relative; }
+.mf-field:last-child { margin-bottom: 0; }
+.mf-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--smoke);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.mf-field input, .mf-field select, .mf-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: white;
+  font-size: 16px;
+  color: var(--charcoal);
+  font-family: var(--sans);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mf-field input:focus, .mf-field select:focus, .mf-field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(184,150,91,0.15);
+}
+.mf-field textarea { min-height: 70px; resize: vertical; }
+.mf-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Autocomplete dropdown */
+.mf-autocomplete {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: white;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  display: none;
+}
+.mf-autocomplete.show { display: block; }
+.mf-ac-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.mf-ac-item:last-child { border-bottom: none; }
+.mf-ac-item:hover, .mf-ac-item.active { background: var(--ivory); }
+.mf-ac-name { font-size: 14px; font-weight: 500; color: var(--charcoal); }
+.mf-ac-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Products grid */
+.mf-products {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .mf-products { grid-template-columns: repeat(3, 1fr); }
+}
+.mf-prod {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+.mf-prod:hover { border-color: var(--gold); }
+.mf-prod:active { transform: scale(0.97); }
+.mf-prod.in-cart { border-color: var(--gold); background: linear-gradient(180deg, var(--cream) 0%, #fdf6e8 100%); }
+.mf-prod-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--charcoal);
+  line-height: 1.3;
+  margin-bottom: 6px;
+  min-height: 32px;
+}
+.mf-prod-cat {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.mf-prod-price {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold-deep);
+}
+.mf-prod-price small {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: 3px;
+  letter-spacing: 0.04em;
+}
+.mf-prod-price-old {
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin-right: 6px;
+}
+.mf-prod-qty {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: var(--charcoal);
+  color: var(--gold-2);
+  min-width: 24px; height: 24px;
+  border-radius: 12px;
+  display: none;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 8px;
+}
+.mf-prod.in-cart .mf-prod-qty { display: grid; }
+
+/* Cart items list */
+.mf-cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mf-cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.mf-cart-item-info { min-width: 0; }
+.mf-cart-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--charcoal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mf-cart-item-unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.mf-qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 2px;
+}
+.mf-qty-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--charcoal);
+  font-size: 16px;
+  font-weight: 600;
+  display: grid; place-items: center;
+  transition: background 0.15s;
+}
+.mf-qty-btn:hover { background: var(--ivory); }
+.mf-qty-btn:disabled { opacity: 0.4; }
+.mf-qty-val {
+  min-width: 26px;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+.mf-cart-item-sub {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold-deep);
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Manual line item */
+.mf-manual-add {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--smoke);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  margin-top: 8px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mf-manual-add:hover { border-color: var(--gold); color: var(--gold-deep); }
+
+/* Footer */
+.mf-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0; right: 0;
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  box-shadow: 0 -6px 20px -8px rgba(20,16,12,0.15);
+}
+@supports (padding: max(0px)) {
+  .mf-footer { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+}
+.mf-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--smoke);
+}
+.mf-total-row.grand {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--charcoal);
+  font-weight: 500;
+}
+.mf-total-row .val {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+.mf-total-row.grand .val {
+  font-size: 22px;
+  color: var(--gold-deep);
+}
+.mf-save-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--charcoal);
+  color: var(--cream);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.2s, transform 0.15s;
+  margin-top: 10px;
+  min-height: 50px;
+}
+.mf-save-btn:hover { background: #201814; }
+.mf-save-btn:active { transform: translateY(1px); }
+.mf-save-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+  background: var(--smoke);
+}
+
+.mf-empty-cart {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
 /* iOS safe area */
 @supports (padding: max(0px)) {
   .dash-main { padding-bottom: max(100px, env(safe-area-inset-bottom)); }
@@ -753,7 +1146,123 @@ input { font-family: inherit; }
       </div>
     </div>
   </main>
+
+  <!-- FAB Nouvelle commande -->
+  <button class="fab" id="fabNewOrder" title="Nouvelle commande" aria-label="Nouvelle commande">
+    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 </section>
+
+<!-- ============================================================
+     MODALE NOUVELLE COMMANDE — Phase 2B
+============================================================ -->
+<div class="modal-full" id="newOrderModal">
+  <header class="mf-header">
+    <div class="mf-title">Nouvelle <em>commande</em></div>
+    <button class="mf-close" id="noClose" aria-label="Fermer">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+
+  <div class="mf-body">
+    <!-- Client -->
+    <div class="mf-section">
+      <div class="mf-section-title">Cliente <span class="badge">1</span></div>
+      <div class="mf-card">
+        <div class="mf-field">
+          <label for="noNom">Nom de la cliente</label>
+          <input type="text" id="noNom" autocomplete="off" placeholder="Ex : Aminata Traoré" inputmode="text">
+          <div class="mf-autocomplete" id="noNomAC"></div>
+        </div>
+        <div class="mf-row2">
+          <div class="mf-field">
+            <label for="noTel">Téléphone</label>
+            <input type="tel" id="noTel" placeholder="0102030405" inputmode="numeric" pattern="[0-9 ]+">
+          </div>
+          <div class="mf-field">
+            <label for="noVille">Commune</label>
+            <select id="noVille">
+              <option value="Bouaké">Bouaké</option>
+              <option value="Bouaké centre">Bouaké centre</option>
+              <option value="Bouaké N'Gattakro">Bouaké N'Gattakro</option>
+              <option value="Djébonoua">Djébonoua</option>
+              <option value="Air France 2">Air France 2</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="mf-field">
+          <label for="noAdresse">Adresse (optionnel)</label>
+          <input type="text" id="noAdresse" placeholder="Repère, quartier…">
+        </div>
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="mf-section">
+      <div class="mf-section-title">Articles <span class="badge">2</span></div>
+      <div class="mf-products" id="noProducts"></div>
+      <button class="mf-manual-add" id="noManualAdd" type="button">
+        + Ajouter un article manuel (hors catalogue)
+      </button>
+    </div>
+
+    <!-- Panier -->
+    <div class="mf-section" id="noCartSection" style="display:none">
+      <div class="mf-section-title">Panier <span class="badge">3</span></div>
+      <div class="mf-cart-items" id="noCartItems"></div>
+    </div>
+
+    <!-- Livraison & paiement -->
+    <div class="mf-section">
+      <div class="mf-section-title">Livraison &amp; paiement <span class="badge">4</span></div>
+      <div class="mf-card">
+        <div class="mf-row2">
+          <div class="mf-field">
+            <label for="noLivraison">Livraison (FCFA)</label>
+            <select id="noLivraison">
+              <option value="0">Retrait sur place — 0 F</option>
+              <option value="500">Bouaké — 500 F</option>
+              <option value="1000" selected>Périphérie — 1000 F</option>
+              <option value="1500">Extérieur — 1500 F</option>
+              <option value="2000">Autre — 2000 F</option>
+            </select>
+          </div>
+          <div class="mf-field">
+            <label for="noPaiement">Mode paiement</label>
+            <select id="noPaiement">
+              <option value="Cash">Cash</option>
+              <option value="Orange Money">Orange Money</option>
+              <option value="MTN Momo">MTN Momo</option>
+              <option value="Wave">Wave</option>
+              <option value="Virement">Virement</option>
+            </select>
+          </div>
+        </div>
+        <div class="mf-field">
+          <label for="noNotes">Notes / instructions (optionnel)</label>
+          <textarea id="noNotes" placeholder="Ex : livrer le samedi matin, cadeau, etc."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mf-footer">
+    <div class="mf-total-row">
+      <span>Sous-total</span>
+      <span class="val" id="noSubtotal">0 F</span>
+    </div>
+    <div class="mf-total-row">
+      <span>Livraison</span>
+      <span class="val" id="noLivraisonSum">1 000 F</span>
+    </div>
+    <div class="mf-total-row grand">
+      <span>Total à payer</span>
+      <span class="val" id="noTotal">1 000 F</span>
+    </div>
+    <button class="mf-save-btn" id="noSave">Enregistrer la commande</button>
+  </footer>
+</div>
 
 <!-- ============================================================
      TOAST & MODAL
@@ -1103,10 +1612,345 @@ const Admin = (() => {
     }
   }
 
-  return { init, logout, login };
+  return { init, logout, login, apiGet, toast, loadAll };
 })();
 
-document.addEventListener('DOMContentLoaded', Admin.init);
+/* ============================================================
+   NEW ORDER MODULE — Phase 2B
+   Modale de saisie de nouvelle commande.
+============================================================ */
+const NewOrder = (() => {
+
+  // Catalogue produits (miroir de la vitrine — à migrer vers Sheet plus tard)
+  const CATALOG = [
+    { id:'suppo-150',           name:"Suppositoire Bobaraba 150g",  cat:'Suppositoires', price:5000 },
+    { id:'suppo-250',           name:"Suppositoire Bobaraba 250g",  cat:'Suppositoires', price:10000 },
+    { id:'sirop-shape',         name:"Sirop Shape Plus+ 300ml",     cat:'Sirops',        price:10000 },
+    { id:'sirop-sublime',       name:"Sirop Sublime Courbes 500ml", cat:'Sirops',        price:10000 },
+    { id:'creme-vitesse-300',   name:"Crème Vitesse 300g",          cat:'Crèmes',        price:5000,  priceOld:10000 },
+    { id:'creme-vitesse-150',   name:"Crème Vitesse 150g",          cat:'Crèmes',        price:3000,  priceOld:6000 },
+    { id:'huile-raff',          name:"Huile Raffermissante",        cat:'Huiles',        price:2000 },
+    { id:'savon-noir',          name:"Savon Noir Magic Black",      cat:'Savons',        price:8000 },
+    { id:'savon-collagene',     name:"Savon au Collagène",          cat:'Savons',        price:5000 },
+    { id:'savon-mangue',        name:"Savon Teint Clair Mangue",    cat:'Savons',        price:6000 },
+    { id:'caolins',             name:"Caolins",                     cat:'Soins',         price:3000 },
+    { id:'kit-fessiers',        name:"Kit Fessiers",                cat:'Kits',          price:11500 },
+    { id:'kit-raffermissant',   name:"Kit Raffermissant",           cat:'Kits',          price:11500 },
+    { id:'mini-kit-botchor',    name:"Mini Kit Botchor",            cat:'Kits',          price:12000 },
+    { id:'kit-botchor-moyen',   name:"Kit Botchor Moyen",           cat:'Kits',          price:17000 },
+    { id:'kit-botchor-premium', name:"Kit Botchor Premium",         cat:'Kits',          price:21000 },
+    { id:'kit-vitesse-mini',    name:"Kit Vitesse Mini",            cat:'Kits',          price:17000 },
+    { id:'kit-vitesse',         name:"Kit Vitesse",                 cat:'Kits',          price:21000 }
+  ];
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => document.querySelectorAll(sel);
+  const fmtMoney = n => (Number(n) || 0).toLocaleString('fr-FR').replace(/,/g, ' ') + ' F';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const state = {
+    cart: {},          // { productId: { name, price, qty, priceOld? } }
+    manualItems: [],   // [{ name, price, qty }]
+    clients: null,     // liste chargée à l'ouverture (cachée)
+    activeACIndex: -1
+  };
+
+  function openModal() {
+    // Reset
+    state.cart = {};
+    state.manualItems = [];
+    state.activeACIndex = -1;
+    $('#noNom').value = '';
+    $('#noTel').value = '';
+    $('#noAdresse').value = '';
+    $('#noVille').value = 'Bouaké';
+    $('#noLivraison').value = '1000';
+    $('#noPaiement').value = 'Cash';
+    $('#noNotes').value = '';
+    hideAutocomplete();
+    renderProducts();
+    renderCart();
+    computeTotals();
+    $('#newOrderModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // Précharge la liste des clients pour l'autocomplete
+    loadClients();
+  }
+
+  function closeModal() {
+    $('#newOrderModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function renderProducts() {
+    const html = CATALOG.map(p => {
+      const inCart = state.cart[p.id];
+      const qty = inCart ? inCart.qty : 0;
+      const promoBadge = p.priceOld ? `<span class="mf-prod-price-old">${fmtMoney(p.priceOld)}</span>` : '';
+      return `<div class="mf-prod ${inCart ? 'in-cart' : ''}" data-id="${p.id}">
+        <div class="mf-prod-cat">${esc(p.cat)}</div>
+        <div class="mf-prod-name">${esc(p.name)}</div>
+        <div class="mf-prod-price">${promoBadge}${fmtMoney(p.price)}<small>/u</small></div>
+        <div class="mf-prod-qty">×${qty}</div>
+      </div>`;
+    }).join('');
+    $('#noProducts').innerHTML = html;
+  }
+
+  function renderCart() {
+    const wrap = $('#noCartSection');
+    const items = $('#noCartItems');
+    const cartEntries = Object.entries(state.cart);
+    const totalItems = cartEntries.length + state.manualItems.length;
+
+    if (totalItems === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    const rowsCart = cartEntries.map(([id, item]) => `
+      <div class="mf-cart-item" data-id="${id}">
+        <div class="mf-cart-item-info">
+          <div class="mf-cart-item-name">${esc(item.name)}</div>
+          <div class="mf-cart-item-unit">${fmtMoney(item.price)} / unité</div>
+        </div>
+        <div class="mf-qty-ctrl">
+          <button class="mf-qty-btn" data-act="dec" data-id="${id}" >−</button>
+          <div class="mf-qty-val">${item.qty}</div>
+          <button class="mf-qty-btn" data-act="inc" data-id="${id}">+</button>
+        </div>
+        <div class="mf-cart-item-sub">${fmtMoney(item.price * item.qty)}</div>
+      </div>
+    `).join('');
+
+    const rowsManual = state.manualItems.map((it, idx) => `
+      <div class="mf-cart-item" data-manual="${idx}">
+        <div class="mf-cart-item-info">
+          <div class="mf-cart-item-name">${esc(it.name)}</div>
+          <div class="mf-cart-item-unit">${fmtMoney(it.price)} / unité · manuel</div>
+        </div>
+        <div class="mf-qty-ctrl">
+          <button class="mf-qty-btn" data-act="mdec" data-idx="${idx}" ${it.qty <= 1 ? 'disabled' : ''}>−</button>
+          <div class="mf-qty-val">${it.qty}</div>
+          <button class="mf-qty-btn" data-act="minc" data-idx="${idx}">+</button>
+        </div>
+        <div class="mf-cart-item-sub">${fmtMoney(it.price * it.qty)}</div>
+      </div>
+    `).join('');
+
+    items.innerHTML = rowsCart + rowsManual;
+  }
+
+  function addToCart(productId) {
+    const p = CATALOG.find(x => x.id === productId);
+    if (!p) return;
+    if (state.cart[productId]) state.cart[productId].qty += 1;
+    else state.cart[productId] = { name: p.name, price: p.price, priceOld: p.priceOld, qty: 1, catalogId: p.id };
+    renderProducts();
+    renderCart();
+    computeTotals();
+  }
+
+  function changeQty(productId, delta) {
+    const item = state.cart[productId];
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) delete state.cart[productId];
+    renderProducts();
+    renderCart();
+    computeTotals();
+  }
+
+  function changeManualQty(idx, delta) {
+    const it = state.manualItems[idx];
+    if (!it) return;
+    it.qty += delta;
+    if (it.qty <= 0) state.manualItems.splice(idx, 1);
+    renderCart();
+    computeTotals();
+  }
+
+  function addManualItem() {
+    const name = prompt("Nom de l'article :");
+    if (!name || !name.trim()) return;
+    const priceStr = prompt("Prix unitaire (FCFA) :", "0");
+    if (priceStr === null) return;
+    const price = Math.max(0, parseInt(priceStr, 10) || 0);
+    state.manualItems.push({ name: name.trim(), price, qty: 1 });
+    renderCart();
+    computeTotals();
+  }
+
+  function computeTotals() {
+    const subCart = Object.values(state.cart).reduce((s, it) => s + it.price * it.qty, 0);
+    const subManual = state.manualItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const sub = subCart + subManual;
+    const livraison = Number($('#noLivraison').value) || 0;
+    $('#noSubtotal').textContent = fmtMoney(sub);
+    $('#noLivraisonSum').textContent = fmtMoney(livraison);
+    $('#noTotal').textContent = fmtMoney(sub + livraison);
+  }
+
+  // ------ Autocomplete client ------
+  async function loadClients() {
+    if (state.clients) return;
+    try {
+      const d = await Admin.apiGet('clients');
+      if (d.success) state.clients = d.clients || [];
+    } catch (e) { state.clients = []; }
+  }
+
+  function filterClients(query) {
+    if (!state.clients || query.length < 2) return [];
+    const q = query.toLowerCase().trim();
+    return state.clients
+      .filter(c => (c.nom || '').toLowerCase().includes(q) || (c.telephone || '').includes(q))
+      .slice(0, 8);
+  }
+
+  function showAutocomplete(matches) {
+    const box = $('#noNomAC');
+    if (!matches.length) { hideAutocomplete(); return; }
+    box.innerHTML = matches.map((c, i) => `
+      <div class="mf-ac-item ${i === state.activeACIndex ? 'active' : ''}" data-i="${i}">
+        <div class="mf-ac-name">${esc(c.nom)}</div>
+        <div class="mf-ac-meta">${esc(c.telephone || '')} ${c.ville ? '· ' + esc(c.ville) : ''}</div>
+      </div>
+    `).join('');
+    box.classList.add('show');
+    state._matches = matches;
+  }
+
+  function hideAutocomplete() {
+    $('#noNomAC').classList.remove('show');
+    state.activeACIndex = -1;
+  }
+
+  function selectClient(c) {
+    $('#noNom').value = c.nom || '';
+    $('#noTel').value = c.telephone || '';
+    if (c.ville) $('#noVille').value = c.ville;
+    hideAutocomplete();
+  }
+
+  // ------ Save order ------
+  async function saveOrder() {
+    const nom = $('#noNom').value.trim();
+    const tel = $('#noTel').value.trim();
+    const ville = $('#noVille').value;
+    const adresse = $('#noAdresse').value.trim();
+    const livraison = Number($('#noLivraison').value) || 0;
+    const paiement = $('#noPaiement').value;
+    const notes = $('#noNotes').value.trim();
+
+    if (!nom) { Admin.toast('Nom de la cliente manquant', 'err'); return; }
+    if (!tel) { Admin.toast('Téléphone manquant', 'err'); return; }
+    const itemsCart = Object.values(state.cart);
+    if (!itemsCart.length && !state.manualItems.length) {
+      Admin.toast('Ajoute au moins un article', 'err');
+      return;
+    }
+
+    const btn = $('#noSave');
+    btn.disabled = true;
+    btn.textContent = 'Enregistrement…';
+
+    const articles = [
+      ...itemsCart.map(it => `${it.qty}× ${it.name} (${fmtMoney(it.price)})`),
+      ...state.manualItems.map(it => `${it.qty}× ${it.name} (${fmtMoney(it.price)})`)
+    ].join('\n');
+    const sousTotal = itemsCart.reduce((s, it) => s + it.price * it.qty, 0)
+                    + state.manualItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const total = sousTotal + livraison;
+
+    const stockDeltas = itemsCart
+      .filter(it => it.catalogId)
+      .map(it => ({ produit: it.name, qty: it.qty }));
+
+    try {
+      const payload = {
+        nom, telephone: tel, ville, adresse,
+        articles, sousTotal, livraison, total,
+        paiement, notes,
+        stockDeltas: JSON.stringify(stockDeltas)
+      };
+      const params = new URLSearchParams();
+      Object.entries(payload).forEach(([k, v]) => params.set(k, v));
+      const d = await Admin.apiGet('createOrder', Object.fromEntries(params));
+      if (d.success) {
+        Admin.toast(`Commande ${d.id} enregistrée`, 'ok');
+        closeModal();
+        Admin.loadAll();
+      } else {
+        Admin.toast('Erreur : ' + (d.error || 'inconnue'), 'err');
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer la commande';
+      }
+    } catch (e) {
+      Admin.toast('Erreur réseau', 'err');
+      btn.disabled = false;
+      btn.textContent = 'Enregistrer la commande';
+    }
+  }
+
+  // ------ Init ------
+  function init() {
+    // Ouvrir
+    $('#fabNewOrder')?.addEventListener('click', openModal);
+    $('#noClose')?.addEventListener('click', closeModal);
+
+    // Sélection produit (tap toggle add)
+    $('#noProducts').addEventListener('click', e => {
+      const card = e.target.closest('.mf-prod');
+      if (!card) return;
+      addToCart(card.dataset.id);
+    });
+
+    // Qty controls dans le panier
+    $('#noCartItems').addEventListener('click', e => {
+      const btn = e.target.closest('.mf-qty-btn');
+      if (!btn) return;
+      const act = btn.dataset.act;
+      if (act === 'inc') changeQty(btn.dataset.id, +1);
+      else if (act === 'dec') changeQty(btn.dataset.id, -1);
+      else if (act === 'minc') changeManualQty(parseInt(btn.dataset.idx, 10), +1);
+      else if (act === 'mdec') changeManualQty(parseInt(btn.dataset.idx, 10), -1);
+    });
+
+    // Ajout manuel
+    $('#noManualAdd').addEventListener('click', addManualItem);
+
+    // Livraison change → recompute
+    $('#noLivraison').addEventListener('change', computeTotals);
+
+    // Autocomplete client
+    let debTimer;
+    $('#noNom').addEventListener('input', e => {
+      clearTimeout(debTimer);
+      debTimer = setTimeout(() => {
+        const q = e.target.value.trim();
+        if (q.length < 2) { hideAutocomplete(); return; }
+        showAutocomplete(filterClients(q));
+      }, 180);
+    });
+    $('#noNom').addEventListener('blur', () => setTimeout(hideAutocomplete, 200));
+    $('#noNomAC').addEventListener('mousedown', e => {
+      const item = e.target.closest('.mf-ac-item');
+      if (!item) return;
+      const idx = parseInt(item.dataset.i, 10);
+      const c = state._matches?.[idx];
+      if (c) selectClient(c);
+    });
+
+    // Save
+    $('#noSave').addEventListener('click', saveOrder);
+  }
+
+  return { init, openModal };
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+  Admin.init();
+  NewOrder.init();
+});
 </script>
 
 </body>
