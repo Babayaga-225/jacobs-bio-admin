@@ -1462,7 +1462,7 @@ const Admin = (() => {
       const s = String(o.statut || 'Nouveau');
       const isFinal = /livr|annul/i.test(s);
       const waMsg = encodeURIComponent(`Bonjour ${o.nom || ''}, au sujet de votre commande ${o.id} chez Jacob's Bio…`);
-      const phone = (o.telephone || '').replace(/[^0-9]/g, '');
+      const phone = String(o.telephone || '').replace(/[^0-9]/g, '');
       const waLink = phone ? `https://wa.me/${phone}?text=${waMsg}` : '';
       const actions = isFinal ? '' : `
         <div class="order-actions">
