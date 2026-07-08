@@ -1476,7 +1476,7 @@ const Admin = (() => {
       const waMsg = encodeURIComponent(`Bonjour ${o.nom || ''}, au sujet de votre commande ${o.id} chez Jacob's Bio…`);
       const phone = String(o.telephone || '').replace(/[^0-9]/g, '');
       const waLink = phone ? `https://wa.me/${phone}?text=${waMsg}` : '';
-      const receiptLink = `https://jacobs-bio.vercel.app/recu.html?id=${encodeURIComponent(o.id)}`;
+      const receiptLink = o.receiptUrl || `https://jacobs-bio.vercel.app/recu.html?id=${encodeURIComponent(o.id)}`;
       const statusButtons = isFinal ? '' : `
         ${!/confirm/i.test(s) ? `<button class="action-btn success" data-act="Confirmée" data-id="${esc(o.id)}">Confirmer</button>` : ''}
         ${!/exped/i.test(s) ? `<button class="action-btn warn" data-act="Expédiée" data-id="${esc(o.id)}">Expédier</button>` : ''}
