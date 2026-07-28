@@ -181,7 +181,7 @@ function receiptSig_(id) {
 }
 
 function receiptUrl_(id) {
-  return 'https://jacobs-bio.vercel.app/recu.html?id=' + encodeURIComponent(id) + '&k=' + receiptSig_(id);
+  return 'https://jacobsbio-cosmetique.com/recu.html?id=' + encodeURIComponent(id) + '&k=' + receiptSig_(id);
 }
 
 function maskPhone_(t) {
@@ -196,7 +196,7 @@ function maskPhone_(t) {
  *
  * Ctrl+F dans Code.gs : cherche  recu.html
  * Partout où un lien est construit à la main, du genre :
- *   'https://jacobs-bio.vercel.app/recu.html?id=' + order.id
+ *   'https://jacobsbio-cosmetique.com/recu.html?id=' + order.id
  * remplace par :
  *   receiptUrl_(order.id)
  * Ainsi les reçus envoyés par WhatsApp porteront la signature et
