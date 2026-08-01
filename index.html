@@ -551,6 +551,116 @@ input { font-family: inherit; }
 }
 .stock-count.warn { color: var(--warn); }
 .stock-count.ok { color: var(--success); }
+
+/* ============ STOCK V2 — onglets, badge, edition inline ============ */
+.stock-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.stock-head-actions { display: flex; gap: 8px; }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 12px; font-weight: 500;
+  color: var(--charcoal);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-ghost:hover { background: var(--cream); border-color: var(--gold, #c8a06a); }
+.btn-ghost svg { flex-shrink: 0; }
+
+.stock-alert-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 7px;
+  background: var(--danger);
+  color: white;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 11px; font-weight: 700;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+.stock-tabs { margin-bottom: 12px; }
+
+.stock-item-v2 {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left-width: 3px;
+}
+.stock-item-v2.rupture  { border-left-color: var(--danger); }
+.stock-item-v2.bas      { border-left-color: var(--warn); }
+.stock-item-v2.en_stock { border-left-color: var(--success); }
+
+.stock-item-main {
+  display: flex; flex-direction: column; gap: 3px;
+  min-width: 0;
+}
+.stock-item-nom {
+  font-size: 14px; font-weight: 600;
+  color: var(--charcoal);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.stock-item-meta {
+  font-size: 11px; color: var(--muted);
+  display: flex; gap: 8px; align-items: center;
+  letter-spacing: 0.02em;
+}
+.stock-item-meta .dot { color: var(--border); }
+.stock-item-status {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.stock-item-status.rupture  { background: rgba(220,38,38,0.12); color: var(--danger); }
+.stock-item-status.bas      { background: rgba(217,119,6,0.14); color: var(--warn); }
+.stock-item-status.en_stock { background: rgba(21,128,61,0.12); color: var(--success); }
+
+.stock-item-qty {
+  display: flex; align-items: center; gap: 6px;
+}
+.stock-qty-value {
+  font-family: var(--serif);
+  font-size: 22px; font-weight: 600;
+  min-width: 38px; text-align: right;
+  padding: 4px 8px; border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.stock-qty-value:hover { background: white; border-color: var(--border); }
+.stock-qty-value.rupture  { color: var(--danger); }
+.stock-qty-value.bas      { color: var(--warn); }
+.stock-qty-value.en_stock { color: var(--success); }
+.stock-qty-input {
+  width: 70px;
+  font-family: var(--serif); font-size: 20px; font-weight: 600;
+  padding: 4px 8px; text-align: right;
+  border: 1.5px solid var(--gold, #c8a06a);
+  border-radius: 8px;
+  outline: none;
+  background: white;
+}
+.stock-qty-saving {
+  display: inline-block; width: 12px; height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold, #c8a06a);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 480px) {
+  .stock-item-nom { font-size: 13px; }
+  .stock-item-meta { font-size: 10px; }
+  .stock-qty-value { font-size: 20px; min-width: 34px; }
+}
 .stock-unit {
   font-family: var(--sans);
   font-size: 11px;
@@ -1159,10 +1269,20 @@ input { font-family: inherit; }
       </div>
     </div>
 
-    <!-- STOCK SECTION -->
-    <div class="section-head">
-      <h2 class="section-title">Stock <em>bas</em></h2>
-      <span class="section-meta" id="stockCount"></span>
+    <!-- STOCK SECTION V2 — onglets Alertes / Tout + edition inline -->
+    <div class="section-head stock-section-head">
+      <h2 class="section-title">Stock <span class="stock-alert-badge" id="stockAlertBadge" hidden></span></h2>
+      <div class="stock-head-actions">
+        <button class="btn-ghost" id="btnOpenSheet" title="Modifier directement dans Google Sheets">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v7h-7"/><path d="M14 10L3 21v-7"/></svg>
+          Ouvrir le Sheet
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-tabs stock-tabs" id="stockTabs">
+      <button class="tab active" data-stock-filter="alerts">Alertes<span class="tab-count" id="stockCountAlerts"></span></button>
+      <button class="tab" data-stock-filter="all">Tout le stock<span class="tab-count" id="stockCountAll"></span></button>
     </div>
 
     <div class="stock-list" id="stockList">
@@ -1311,6 +1431,7 @@ const Admin = (() => {
 
   // ------ CONFIG ------
   const API_URL = 'https://script.google.com/macros/s/AKfycbzhIM4WNYJNnqr3XamM0bDoWi_Ze-zIDJI4S2mm097S58m_Osn4YzY97A41-Q-nerQN/exec';
+  const SHEET_STOCK_URL = 'https://docs.google.com/spreadsheets/d/1w73CNANpX7_E09-qzUTyT-e7AX2InCXLgZVoR179d9U/edit#gid=462592623';
   const SESSION_KEY = 'jb_admin_session';
   const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24h
   const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 min auto-refresh (backend Apps Script lent)
@@ -1548,34 +1669,166 @@ const Admin = (() => {
     }
   }
 
+  // ─── STOCK V2 : onglets Alertes/Tout + edition inline + badge PWA ───
+  let _stockAllItems = [];        // cache des 25 produits recus du backend
+  let _stockCurrentFilter = 'alerts';
+
   async function loadStock() {
     const list = $('#stockList');
     try {
-      const d = await apiGet('lowStock');
+      const d = await apiGet('allStock');
       if (!d.success) throw new Error(d.error || 'fail');
-      const items = d.items || [];
-      $('#stockCount').textContent = items.length ? items.length + ' produit' + (items.length > 1 ? 's' : '') : '';
-      if (!items.length) {
-        list.innerHTML = `<div class="state">
-          <div class="state-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 7"/></svg>
-          </div>
-          <h3>Stock au vert</h3>
-          <p>Aucun produit sous le seuil de ${LOW_STOCK_THRESHOLD} unités.</p>
-        </div>`;
-        return;
-      }
-      list.innerHTML = items.map(it => {
-        const c = Number(it.stock) || 0;
-        const cls = c <= 0 ? '' : c <= 2 ? 'warn' : 'ok';
-        return `<div class="stock-item">
-          <div class="stock-name">${esc(it.nom)}</div>
-          <div class="stock-count ${cls}">${c}<span class="stock-unit">unités</span></div>
-        </div>`;
-      }).join('');
+      _stockAllItems = d.items || [];
+      const counts = d.counts || { rupture: 0, bas: 0, en_stock: 0, total: _stockAllItems.length };
+      const nbAlerts = counts.rupture + counts.bas;
+
+      // Compteurs sur les 2 onglets
+      $('#stockCountAlerts').textContent = nbAlerts ? String(nbAlerts) : '';
+      $('#stockCountAll').textContent = String(counts.total);
+
+      // Badge global (a cote du titre "Stock")
+      const badge = $('#stockAlertBadge');
+      if (nbAlerts > 0) { badge.textContent = nbAlerts; badge.hidden = false; }
+      else { badge.hidden = true; }
+
+      // Badge PWA sur l'icone d'ecran d'accueil (Chrome/Android + iOS 16.4+)
+      try {
+        if ('setAppBadge' in navigator) {
+          if (nbAlerts > 0) navigator.setAppBadge(nbAlerts);
+          else navigator.clearAppBadge();
+        }
+      } catch (e) { /* silence : pas supporte sur ce browser */ }
+
+      renderStockList();
     } catch (e) {
       list.innerHTML = '<div class="state"><p>Impossible de charger le stock.</p></div>';
     }
+  }
+
+  function renderStockList() {
+    const list = $('#stockList');
+    const items = _stockCurrentFilter === 'alerts'
+      ? _stockAllItems.filter(it => it.statut === 'rupture' || it.statut === 'bas')
+      : _stockAllItems;
+
+    if (!items.length) {
+      list.innerHTML = _stockCurrentFilter === 'alerts'
+        ? `<div class="state">
+            <div class="state-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 7"/></svg>
+            </div>
+            <h3>Stock au vert</h3>
+            <p>Aucun produit sous le seuil.</p>
+           </div>`
+        : `<div class="state"><p>Aucun produit dans le stock.</p></div>`;
+      return;
+    }
+
+    const STATUT_LABEL = { rupture: 'Rupture', bas: 'Bas', en_stock: 'En stock' };
+    list.innerHTML = items.map(it => {
+      const st = it.statut || 'en_stock';
+      const seuil = it.seuil || 5;
+      const cat = it.cat || '';
+      const productKey = it.id || it.nom;
+      return `<div class="stock-item-v2 ${st}" data-product-key="${esc(productKey)}" data-product-id="${esc(it.id || '')}" data-product-name="${esc(it.nom)}">
+        <div class="stock-item-main">
+          <div class="stock-item-nom">${esc(it.nom)}</div>
+          <div class="stock-item-meta">
+            <span class="stock-item-status ${st}">${STATUT_LABEL[st]}</span>
+            ${cat ? '<span class="dot">·</span><span>' + esc(cat) + '</span>' : ''}
+            <span class="dot">·</span><span>Seuil ${seuil}</span>
+          </div>
+        </div>
+        <div class="stock-item-qty">
+          <span class="stock-qty-value ${st}" role="button" tabindex="0" title="Cliquez pour modifier">${it.stock}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Attache l'edition inline sur chaque quantite
+    list.querySelectorAll('.stock-qty-value').forEach(el => {
+      el.addEventListener('click', () => startStockEdit(el));
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startStockEdit(el); }
+      });
+    });
+  }
+
+  function startStockEdit(spanEl) {
+    if (spanEl.querySelector('input')) return;
+    const parent = spanEl.closest('.stock-item-v2');
+    const productId = parent.dataset.productId || '';
+    const productName = parent.dataset.productName || '';
+    const currentQty = Number(spanEl.textContent.trim()) || 0;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.step = '1';
+    input.value = String(currentQty);
+    input.className = 'stock-qty-input';
+    input.setAttribute('aria-label', 'Nouvelle quantite pour ' + productName);
+
+    spanEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    let saved = false;
+    const commit = async () => {
+      if (saved) return; saved = true;
+      const newQty = parseInt(input.value, 10);
+      if (!isFinite(newQty) || newQty < 0) { restoreSpan(input, currentQty, parent); return; }
+      if (newQty === currentQty) { restoreSpan(input, currentQty, parent); return; }
+
+      // Affiche un mini spinner pendant la sauvegarde
+      const spinner = document.createElement('span');
+      spinner.className = 'stock-qty-saving';
+      input.replaceWith(spinner);
+
+      try {
+        const params = { newStock: String(newQty) };
+        if (productId) params.productId = productId;
+        else params.productName = productName;
+        const d = await apiGet('updateStock', params);
+        if (!d.success) throw new Error(d.error || 'echec');
+        toast('Stock mis à jour : ' + productName + ' → ' + newQty, 'ok');
+        // Recharge tout le stock pour refleter le nouveau statut + compteurs + badge
+        await loadStock();
+      } catch (err) {
+        toast('Erreur : ' + (err.message || err), 'err');
+        spinner.replaceWith(_makeQtySpan(currentQty, parent.classList.contains('rupture') ? 'rupture' : parent.classList.contains('bas') ? 'bas' : 'en_stock'));
+      }
+    };
+    const cancel = () => restoreSpan(input, currentQty, parent);
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { saved = true; cancel(); }
+    });
+  }
+
+  function restoreSpan(inputEl, qty, parent) {
+    const statut = parent.classList.contains('rupture') ? 'rupture'
+                 : parent.classList.contains('bas') ? 'bas' : 'en_stock';
+    inputEl.replaceWith(_makeQtySpan(qty, statut));
+    const newSpan = parent.querySelector('.stock-qty-value');
+    if (newSpan) {
+      newSpan.addEventListener('click', () => startStockEdit(newSpan));
+      newSpan.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startStockEdit(newSpan); }
+      });
+    }
+  }
+
+  function _makeQtySpan(qty, statut) {
+    const span = document.createElement('span');
+    span.className = 'stock-qty-value ' + statut;
+    span.setAttribute('role', 'button');
+    span.setAttribute('tabindex', '0');
+    span.setAttribute('title', 'Cliquez pour modifier');
+    span.textContent = qty;
+    return span;
   }
 
   async function loadAll() {
@@ -1624,6 +1877,19 @@ const Admin = (() => {
         loadOrders(currentFilter);
       });
     });
+
+    // Stock tabs (Alertes / Tout)
+    $$('#stockTabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        $$('#stockTabs .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        _stockCurrentFilter = tab.dataset.stockFilter;
+        renderStockList();
+      });
+    });
+
+    // Bouton "Ouvrir le Sheet"
+    $('#btnOpenSheet').addEventListener('click', () => window.open(SHEET_STOCK_URL, '_blank'));
 
     // Order action buttons (delegated)
     $('#orderList').addEventListener('click', e => {
