@@ -552,6 +552,73 @@ input { font-family: inherit; }
 .stock-count.warn { color: var(--warn); }
 .stock-count.ok { color: var(--success); }
 
+/* ============ NAV PAR VUES (Dashboard / Stock) ============ */
+.view-nav {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.view-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  position: relative;
+}
+.view-tab:hover:not(.active) { background: rgba(255,255,255,0.5); color: var(--charcoal); }
+.view-tab.active {
+  background: white;
+  color: var(--charcoal);
+  box-shadow: 0 2px 6px -1px rgba(0,0,0,0.06), 0 0 0 1px var(--border);
+}
+.view-tab svg { flex-shrink: 0; }
+.view-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--danger);
+  color: white;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.view { display: none; }
+.view.active { display: block; }
+
+.kpi-clickable { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.kpi-clickable:hover { transform: translateY(-2px); box-shadow: 0 6px 18px -8px rgba(220,38,38,0.35); }
+.kpi-clickable:focus { outline: 2px solid var(--danger); outline-offset: 2px; }
+
+@media (max-width: 480px) {
+  .view-nav { padding: 4px; margin-bottom: 18px; }
+  .view-tab { padding: 10px 12px; font-size: 13px; gap: 6px; }
+  .view-tab svg { width: 14px; height: 14px; }
+}
+
 /* ============ STOCK V2 — onglets, badge, edition inline ============ */
 .stock-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .stock-head-actions { display: flex; gap: 8px; }
@@ -1215,6 +1282,20 @@ input { font-family: inherit; }
   </header>
 
   <main class="dash-main">
+    <!-- ========== NAVIGATION PAR VUES ========== -->
+    <nav class="view-nav" id="viewNav" aria-label="Navigation principale">
+      <button class="view-tab active" data-view="dashboard" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </button>
+      <button class="view-tab" data-view="stock" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        Stock<span class="view-tab-badge" id="viewTabStockBadge" hidden></span>
+      </button>
+    </nav>
+
+    <!-- ========== VUE DASHBOARD ========== -->
+    <div class="view view-dashboard active" id="viewDashboard">
     <!-- KPI SECTION -->
     <div class="section-head">
       <h2 class="section-title">Aperçu <em>du jour</em></h2>
@@ -1240,10 +1321,10 @@ input { font-family: inherit; }
         <div class="kpi-value" id="kpiPending"><div class="kpi-skeleton tall"></div></div>
         <div class="kpi-hint">commandes à traiter</div>
       </div>
-      <div class="kpi danger">
+      <div class="kpi danger kpi-clickable" id="kpiStockLowCard" role="button" tabindex="0" title="Voir les alertes stock">
         <div class="kpi-label">Stock bas</div>
         <div class="kpi-value" id="kpiStockLow"><div class="kpi-skeleton tall"></div></div>
-        <div class="kpi-hint">produits ≤ 5 unités</div>
+        <div class="kpi-hint">Voir les alertes →</div>
       </div>
     </div>
 
@@ -1268,7 +1349,10 @@ input { font-family: inherit; }
         <p>Chargement des commandes…</p>
       </div>
     </div>
+    </div><!-- /view-dashboard -->
 
+    <!-- ========== VUE STOCK ========== -->
+    <div class="view view-stock" id="viewStock">
     <!-- STOCK SECTION V2 — onglets Alertes / Tout + edition inline -->
     <div class="section-head stock-section-head">
       <h2 class="section-title">Stock <span class="stock-alert-badge" id="stockAlertBadge" hidden></span></h2>
@@ -1290,6 +1374,7 @@ input { font-family: inherit; }
         <p>Chargement du stock…</p>
       </div>
     </div>
+    </div><!-- /view-stock -->
   </main>
 
   <!-- FAB Nouvelle commande -->
@@ -1691,6 +1776,13 @@ const Admin = (() => {
       if (nbAlerts > 0) { badge.textContent = nbAlerts; badge.hidden = false; }
       else { badge.hidden = true; }
 
+      // Badge sur l'onglet Stock de la nav principale
+      const tabBadge = $('#viewTabStockBadge');
+      if (tabBadge) {
+        if (nbAlerts > 0) { tabBadge.textContent = nbAlerts; tabBadge.hidden = false; }
+        else { tabBadge.hidden = true; }
+      }
+
       // Badge PWA sur l'icone d'ecran d'accueil (Chrome/Android + iOS 16.4+)
       try {
         if ('setAppBadge' in navigator) {
@@ -1839,6 +1931,16 @@ const Admin = (() => {
     await loadStock();
   }
 
+  // Bascule entre les 2 vues principales (dashboard / stock)
+  function switchView(name) {
+    if (name !== 'dashboard' && name !== 'stock') return;
+    $$('#viewNav .view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+    $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view' + name.charAt(0).toUpperCase() + name.slice(1)));
+    try { localStorage.setItem('jbc_admin_view', name); } catch (e) {}
+    // Scroll top pour partir en haut de la nouvelle vue
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function startAutoRefresh() {
     stopAutoRefresh();
     refreshTimer = setInterval(loadAll, AUTO_REFRESH_MS);
@@ -1890,6 +1992,33 @@ const Admin = (() => {
 
     // Bouton "Ouvrir le Sheet"
     $('#btnOpenSheet').addEventListener('click', () => window.open(SHEET_STOCK_URL, '_blank'));
+
+    // View tabs (Dashboard / Stock) — navigation principale
+    $$('#viewNav .view-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchView(tab.dataset.view));
+    });
+
+    // KPI "Stock bas" cliquable → bascule sur vue Stock, onglet Alertes
+    const kpiStockCard = $('#kpiStockLowCard');
+    if (kpiStockCard) {
+      const goToStockAlerts = () => {
+        switchView('stock');
+        // Force le sous-onglet Alertes actif
+        $$('#stockTabs .tab').forEach(t => t.classList.toggle('active', t.dataset.stockFilter === 'alerts'));
+        _stockCurrentFilter = 'alerts';
+        renderStockList();
+      };
+      kpiStockCard.addEventListener('click', goToStockAlerts);
+      kpiStockCard.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToStockAlerts(); }
+      });
+    }
+
+    // Restaure la derniere vue depuis localStorage (defaut : dashboard)
+    try {
+      const savedView = localStorage.getItem('jbc_admin_view');
+      if (savedView === 'stock') switchView('stock');
+    } catch (e) {}
 
     // Order action buttons (delegated)
     $('#orderList').addEventListener('click', e => {
