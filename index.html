@@ -1628,38 +1628,79 @@ const Admin = (() => {
     }
   }
 
+  // ------ CACHE CLIENT (stale-while-revalidate) ------
+  // Affiche instantanement la derniere donnee connue depuis localStorage,
+  // puis fetch en arriere-plan pour rafraichir silencieusement.
+  // Effet : dashboard "instantane" au 2e+ chargement, fetch reel invisible.
+  const CACHE_TTL_MS = 15 * 60 * 1000; // 15 min de validite max
+  function cacheRead(key) {
+    try {
+      const raw = localStorage.getItem('jbc_cache_' + key);
+      if (!raw) return null;
+      const { t, data } = JSON.parse(raw);
+      if (Date.now() - t > CACHE_TTL_MS) return null;
+      return data;
+    } catch (e) { return null; }
+  }
+  function cacheWrite(key, data) {
+    try { localStorage.setItem('jbc_cache_' + key, JSON.stringify({ t: Date.now(), data })); } catch (e) {}
+  }
+  function cacheClear(prefix) {
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('jbc_cache_' + prefix)) localStorage.removeItem(k);
+      }
+    } catch (e) {}
+  }
+
   // ------ DATA LOADING ------
+  function renderStats(d) {
+    $('#kpiCaJour').innerHTML = fmtMoney(d.caJour) + '<small></small>';
+    $('#kpiCaJourHint').textContent = (d.commandesJour || 0) + ' commande' + (d.commandesJour > 1 ? 's' : '');
+    $('#kpiCaMois').innerHTML = fmtMoney(d.caMois) + '<small></small>';
+    $('#kpiCaMoisHint').textContent = (d.commandesMois || 0) + ' commande' + (d.commandesMois > 1 ? 's' : '');
+    $('#kpiPending').textContent = d.pending || 0;
+    $('#kpiStockLow').textContent = d.stockLow || 0;
+    $('#countToday').textContent = d.commandesJour ? '(' + d.commandesJour + ')' : '';
+    $('#countPending').textContent = d.pending ? '(' + d.pending + ')' : '';
+    $('#countWeek').textContent = d.commandesSemaine ? '(' + d.commandesSemaine + ')' : '';
+    const now = new Date();
+    $('#lastUpdate').textContent = 'MAJ ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  }
   async function loadStats() {
+    const cached = cacheRead('stats');
+    if (cached) renderStats(cached); // instant depuis cache
     try {
       const d = await apiGet('stats');
       if (!d.success) return;
-      $('#kpiCaJour').innerHTML = fmtMoney(d.caJour) + '<small></small>';
-      $('#kpiCaJourHint').textContent = (d.commandesJour || 0) + ' commande' + (d.commandesJour > 1 ? 's' : '');
-      $('#kpiCaMois').innerHTML = fmtMoney(d.caMois) + '<small></small>';
-      $('#kpiCaMoisHint').textContent = (d.commandesMois || 0) + ' commande' + (d.commandesMois > 1 ? 's' : '');
-      $('#kpiPending').textContent = d.pending || 0;
-      $('#kpiStockLow').textContent = d.stockLow || 0;
-
-      $('#countToday').textContent = d.commandesJour ? '(' + d.commandesJour + ')' : '';
-      $('#countPending').textContent = d.pending ? '(' + d.pending + ')' : '';
-      $('#countWeek').textContent = d.commandesSemaine ? '(' + d.commandesSemaine + ')' : '';
-
-      const now = new Date();
-      $('#lastUpdate').textContent = 'MAJ ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+      cacheWrite('stats', d);
+      renderStats(d);
     } catch (e) { console.warn('stats fail', e); }
   }
 
   async function loadOrders(filter = currentFilter) {
     const list = $('#orderList');
-    list.innerHTML = '<div class="state"><p>Chargement…</p></div>';
+    const cacheKey = 'orders_' + filter;
+    // 1. Affiche instantanement le cache si dispo
+    const cached = cacheRead(cacheKey);
+    if (cached && cached.orders) {
+      ordersCache = cached.orders;
+      renderOrders(ordersCache);
+      $('#ordersCount').textContent = ordersCache.length + ' résultat' + (ordersCache.length > 1 ? 's' : '');
+    } else {
+      list.innerHTML = '<div class="state"><p>Chargement…</p></div>';
+    }
+    // 2. Fetch en arriere-plan pour rafraichir
     try {
       const d = await apiGet('orders', { filter });
       if (!d.success) throw new Error(d.error || 'fail');
+      cacheWrite(cacheKey, d);
       ordersCache = d.orders || [];
       renderOrders(ordersCache);
       $('#ordersCount').textContent = ordersCache.length + ' résultat' + (ordersCache.length > 1 ? 's' : '');
     } catch (e) {
-      list.innerHTML = '<div class="state"><h3>Impossible de charger</h3><p>' + esc(e.message) + '</p></div>';
+      if (!cached) list.innerHTML = '<div class="state"><h3>Impossible de charger</h3><p>' + esc(e.message) + '</p></div>';
     }
   }
 
@@ -1758,42 +1799,50 @@ const Admin = (() => {
   let _stockAllItems = [];        // cache des 25 produits recus du backend
   let _stockCurrentFilter = 'alerts';
 
+  function applyStockData(d) {
+    _stockAllItems = d.items || [];
+    const counts = d.counts || { rupture: 0, bas: 0, en_stock: 0, total: _stockAllItems.length };
+    const nbAlerts = counts.rupture + counts.bas;
+
+    // Compteurs sur les 2 onglets
+    $('#stockCountAlerts').textContent = nbAlerts ? String(nbAlerts) : '';
+    $('#stockCountAll').textContent = String(counts.total);
+
+    // Badge global (a cote du titre "Stock")
+    const badge = $('#stockAlertBadge');
+    if (nbAlerts > 0) { badge.textContent = nbAlerts; badge.hidden = false; }
+    else { badge.hidden = true; }
+
+    // Badge sur l'onglet Stock de la nav principale
+    const tabBadge = $('#viewTabStockBadge');
+    if (tabBadge) {
+      if (nbAlerts > 0) { tabBadge.textContent = nbAlerts; tabBadge.hidden = false; }
+      else { tabBadge.hidden = true; }
+    }
+
+    // Badge PWA sur l'icone d'ecran d'accueil (Chrome/Android + iOS 16.4+)
+    try {
+      if ('setAppBadge' in navigator) {
+        if (nbAlerts > 0) navigator.setAppBadge(nbAlerts);
+        else navigator.clearAppBadge();
+      }
+    } catch (e) { /* silence : pas supporte sur ce browser */ }
+
+    renderStockList();
+  }
   async function loadStock() {
     const list = $('#stockList');
+    // 1. Instant depuis cache si dispo
+    const cached = cacheRead('allstock');
+    if (cached && cached.items) applyStockData(cached);
+    // 2. Fetch en arriere-plan pour rafraichir
     try {
       const d = await apiGet('allStock');
       if (!d.success) throw new Error(d.error || 'fail');
-      _stockAllItems = d.items || [];
-      const counts = d.counts || { rupture: 0, bas: 0, en_stock: 0, total: _stockAllItems.length };
-      const nbAlerts = counts.rupture + counts.bas;
-
-      // Compteurs sur les 2 onglets
-      $('#stockCountAlerts').textContent = nbAlerts ? String(nbAlerts) : '';
-      $('#stockCountAll').textContent = String(counts.total);
-
-      // Badge global (a cote du titre "Stock")
-      const badge = $('#stockAlertBadge');
-      if (nbAlerts > 0) { badge.textContent = nbAlerts; badge.hidden = false; }
-      else { badge.hidden = true; }
-
-      // Badge sur l'onglet Stock de la nav principale
-      const tabBadge = $('#viewTabStockBadge');
-      if (tabBadge) {
-        if (nbAlerts > 0) { tabBadge.textContent = nbAlerts; tabBadge.hidden = false; }
-        else { tabBadge.hidden = true; }
-      }
-
-      // Badge PWA sur l'icone d'ecran d'accueil (Chrome/Android + iOS 16.4+)
-      try {
-        if ('setAppBadge' in navigator) {
-          if (nbAlerts > 0) navigator.setAppBadge(nbAlerts);
-          else navigator.clearAppBadge();
-        }
-      } catch (e) { /* silence : pas supporte sur ce browser */ }
-
-      renderStockList();
+      cacheWrite('allstock', d);
+      applyStockData(d);
     } catch (e) {
-      list.innerHTML = '<div class="state"><p>Impossible de charger le stock.</p></div>';
+      if (!cached) list.innerHTML = '<div class="state"><p>Impossible de charger le stock.</p></div>';
     }
   }
 
