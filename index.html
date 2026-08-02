@@ -1410,14 +1410,20 @@ input { font-family: inherit; }
             <input type="tel" id="noTel" placeholder="0102030405" inputmode="numeric" pattern="[0-9 ]+">
           </div>
           <div class="mf-field">
-            <label for="noVille">Commune</label>
+            <label for="noVille">Ville / commune</label>
             <select id="noVille">
-              <option value="Bouaké">Bouaké</option>
-              <option value="Bouaké centre">Bouaké centre</option>
-              <option value="Bouaké N'Gattakro">Bouaké N'Gattakro</option>
-              <option value="Djébonoua">Djébonoua</option>
-              <option value="Air France 2">Air France 2</option>
-              <option value="Autre">Autre</option>
+              <optgroup label="Bouaké">
+                <option value="Bouaké">Bouaké (générique)</option>
+                <option value="Bouaké centre">Bouaké centre</option>
+                <option value="Bouaké N'Gattakro">Bouaké N'Gattakro</option>
+                <option value="Djébonoua">Djébonoua</option>
+                <option value="Air France 2">Air France 2</option>
+              </optgroup>
+              <optgroup label="Autres villes CI">
+                <option value="Yamoussoukro">Yamoussoukro</option>
+                <option value="Abidjan">Abidjan</option>
+                <option value="Autre">Autre ville CI</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -1449,14 +1455,8 @@ input { font-family: inherit; }
       <div class="mf-card">
         <div class="mf-row2">
           <div class="mf-field">
-            <label for="noLivraison">Livraison (FCFA)</label>
-            <select id="noLivraison">
-              <option value="0">Retrait sur place — 0 F</option>
-              <option value="500">Bouaké — 500 F</option>
-              <option value="1000" selected>Périphérie — 1000 F</option>
-              <option value="1500">Extérieur — 1500 F</option>
-              <option value="2000">Autre — 2000 F</option>
-            </select>
+            <label for="noLivraison">Livraison (FCFA) <small style="color:var(--muted);font-weight:400">auto selon la ville, modifiable</small></label>
+            <input type="number" id="noLivraison" min="0" step="100" value="700" inputmode="numeric">
           </div>
           <div class="mf-field">
             <label for="noPaiement">Mode paiement</label>
@@ -2128,6 +2128,20 @@ const NewOrder = (() => {
     { id:'kit-antitache',       name:"Kit antitache & anti-acné",   cat:'Kits',          price:8000 }
   ];
 
+  // Frais de livraison par ville (aligne sur le site vitrine).
+  // Auto-appliques quand Mlle Kouassi change la ville dans la modale,
+  // mais l'input reste modifiable manuellement (ex: livraison offerte).
+  const SHIPPING_BY_VILLE = {
+    'Bouaké':              700,
+    'Bouaké centre':       700,
+    "Bouaké N'Gattakro":   700,
+    'Djébonoua':           1000,
+    'Air France 2':        700,
+    'Yamoussoukro':        1500,
+    'Abidjan':             2500,
+    'Autre':               2500
+  };
+
   const $ = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
   const fmtMoney = n => (Number(n) || 0).toLocaleString('fr-FR').replace(/,/g, ' ') + ' F';
@@ -2149,7 +2163,7 @@ const NewOrder = (() => {
     $('#noTel').value = '';
     $('#noAdresse').value = '';
     $('#noVille').value = 'Bouaké';
-    $('#noLivraison').value = '1000';
+    $('#noLivraison').value = String(SHIPPING_BY_VILLE['Bouaké'] || 700);
     $('#noPaiement').value = 'Cash';
     $('#noNotes').value = '';
     hideAutocomplete();
@@ -2403,8 +2417,19 @@ const NewOrder = (() => {
     // Ajout manuel
     $('#noManualAdd').addEventListener('click', addManualItem);
 
-    // Livraison change → recompute
+    // Livraison change → recompute (l'input est un number, on ecoute aussi input)
     $('#noLivraison').addEventListener('change', computeTotals);
+    $('#noLivraison').addEventListener('input', computeTotals);
+
+    // Ville change → auto-update livraison selon SHIPPING_BY_VILLE
+    $('#noVille').addEventListener('change', () => {
+      const ville = $('#noVille').value;
+      const prix = SHIPPING_BY_VILLE[ville];
+      if (prix != null) {
+        $('#noLivraison').value = String(prix);
+        computeTotals();
+      }
+    });
 
     // Autocomplete client
     let debTimer;
