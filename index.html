@@ -1656,10 +1656,15 @@ const Admin = (() => {
 
   // ------ DATA LOADING ------
   function renderStats(d) {
+    // CA produits (hors livraison — la livraison est un service, pas un revenu net)
     $('#kpiCaJour').innerHTML = fmtMoney(d.caJour) + '<small></small>';
-    $('#kpiCaJourHint').textContent = (d.commandesJour || 0) + ' commande' + (d.commandesJour > 1 ? 's' : '');
+    const jHint = (d.commandesJour || 0) + ' commande' + (d.commandesJour > 1 ? 's' : '')
+      + (d.caLivraisonJour > 0 ? ' · +' + fmtMoney(d.caLivraisonJour) + ' livraison' : ' · hors livraison');
+    $('#kpiCaJourHint').textContent = jHint;
     $('#kpiCaMois').innerHTML = fmtMoney(d.caMois) + '<small></small>';
-    $('#kpiCaMoisHint').textContent = (d.commandesMois || 0) + ' commande' + (d.commandesMois > 1 ? 's' : '');
+    const mHint = (d.commandesMois || 0) + ' commande' + (d.commandesMois > 1 ? 's' : '')
+      + (d.caLivraisonMois > 0 ? ' · +' + fmtMoney(d.caLivraisonMois) + ' livraison' : ' · hors livraison');
+    $('#kpiCaMoisHint').textContent = mHint;
     $('#kpiPending').textContent = d.pending || 0;
     $('#kpiStockLow').textContent = d.stockLow || 0;
     $('#countToday').textContent = d.commandesJour ? '(' + d.commandesJour + ')' : '';
