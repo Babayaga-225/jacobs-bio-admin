@@ -1742,7 +1742,7 @@ const Admin = (() => {
         ${!/confirm/i.test(s) ? `<button class="action-btn success" data-act="Confirmée" data-id="${esc(o.id)}">Confirmer</button>` : ''}
         ${!/exped/i.test(s) ? `<button class="action-btn warn" data-act="Expédiée" data-id="${esc(o.id)}">Expédier</button>` : ''}
         <button class="action-btn success" data-act="Livrée" data-id="${esc(o.id)}">Livrée</button>
-        <button class="action-btn danger" data-act="Annulée" data-id="${esc(o.id)}">Annuler</button>
+        <button class="action-btn danger" data-act="Abandonnée" data-id="${esc(o.id)}">Abandonner</button>
       `;
       const actions = `
         <div class="order-actions">
