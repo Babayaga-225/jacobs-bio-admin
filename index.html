@@ -2171,6 +2171,8 @@ const NewOrder = (() => {
     $('#noLivraison').value = String(SHIPPING_BY_VILLE['Bouaké'] || 700);
     $('#noPaiement').value = 'Cash';
     $('#noNotes').value = '';
+    $('#noSave').disabled = false;
+    $('#noSave').textContent = 'Enregistrer la commande';
     hideAutocomplete();
     renderProducts();
     renderCart();
@@ -2385,11 +2387,10 @@ const NewOrder = (() => {
         Admin.loadAll();
       } else {
         Admin.toast('Erreur : ' + (d.error || 'inconnue'), 'err');
-        btn.disabled = false;
-        btn.textContent = 'Enregistrer la commande';
       }
     } catch (e) {
       Admin.toast('Erreur réseau', 'err');
+    } finally {
       btn.disabled = false;
       btn.textContent = 'Enregistrer la commande';
     }
