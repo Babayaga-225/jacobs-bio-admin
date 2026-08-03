@@ -1413,15 +1413,13 @@ input { font-family: inherit; }
             <label for="noVille">Ville / commune</label>
             <select id="noVille">
               <optgroup label="Bouaké">
-                <option value="Bouaké">Bouaké (générique)</option>
-                <option value="Bouaké centre">Bouaké centre</option>
-                <option value="Bouaké N'Gattakro">Bouaké N'Gattakro</option>
-                <option value="Djébonoua">Djébonoua</option>
-                <option value="Air France 2">Air France 2</option>
+                <option value="Bouaké centre">Bouaké centre · 700 F — Commerce, N'Gattakro, Ahougnanssou…</option>
+                <option value="Bouaké extension">Bouaké extension · 1 000 F — Kennedy, Air France 3, Soukoura…</option>
+                <option value="Bouaké alentours">Bouaké alentours · 1 500 F — Béoumi, Botro, Diabo…</option>
               </optgroup>
               <optgroup label="Autres villes CI">
-                <option value="Yamoussoukro">Yamoussoukro</option>
-                <option value="Abidjan">Abidjan</option>
+                <option value="Yamoussoukro">Yamoussoukro · 1 500 F</option>
+                <option value="Abidjan">Abidjan · 2 500 F</option>
                 <option value="Autre">Autre ville CI</option>
               </optgroup>
             </select>
@@ -2137,11 +2135,9 @@ const NewOrder = (() => {
   // Auto-appliques quand Mlle Kouassi change la ville dans la modale,
   // mais l'input reste modifiable manuellement (ex: livraison offerte).
   const SHIPPING_BY_VILLE = {
-    'Bouaké':              700,
     'Bouaké centre':       700,
-    "Bouaké N'Gattakro":   700,
-    'Djébonoua':           1000,
-    'Air France 2':        700,
+    'Bouaké extension':    1000,
+    'Bouaké alentours':    1500,
     'Yamoussoukro':        1500,
     'Abidjan':             2500,
     'Autre':               2500
@@ -2167,8 +2163,8 @@ const NewOrder = (() => {
     $('#noNom').value = '';
     $('#noTel').value = '';
     $('#noAdresse').value = '';
-    $('#noVille').value = 'Bouaké';
-    $('#noLivraison').value = String(SHIPPING_BY_VILLE['Bouaké'] || 700);
+    $('#noVille').value = 'Bouaké centre';
+    $('#noLivraison').value = String(SHIPPING_BY_VILLE['Bouaké centre'] || 700);
     $('#noPaiement').value = 'Cash';
     $('#noNotes').value = '';
     $('#noSave').disabled = false;
