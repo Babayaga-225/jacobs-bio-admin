@@ -2103,13 +2103,13 @@ const NewOrder = (() => {
 
   // Catalogue produits (miroir de la vitrine — à migrer vers Sheet plus tard)
   const CATALOG = [
-    // Promo du 3 au 7 août 2026 : suppositoires -10%, crèmes -50%
-    { id:'suppo-150',           name:"Suppositoire Bobaraba 150g",  cat:'Suppositoires', price:4500,  priceOld:5000 },
-    { id:'suppo-250',           name:"Suppositoire Bobaraba 250g",  cat:'Suppositoires', price:9000,  priceOld:10000 },
+    // Prix normaux — les promos sont appliquées dynamiquement via Config Sheet (voir applyPromoToCatalog)
+    { id:'suppo-150',           name:"Suppositoire Bobaraba 150g",  cat:'Suppositoires', price:5000 },
+    { id:'suppo-250',           name:"Suppositoire Bobaraba 250g",  cat:'Suppositoires', price:10000 },
     { id:'sirop-shape',         name:"Sirop Shape Plus+ 300ml",     cat:'Sirops',        price:10000 },
     { id:'sirop-sublime',       name:"Sirop Sublime Courbes 500ml", cat:'Sirops',        price:10000 },
-    { id:'creme-vitesse-300',   name:"Crème Vitesse 300g",          cat:'Crèmes',        price:5000,  priceOld:10000 },
-    { id:'creme-vitesse-150',   name:"Crème Vitesse 150g",          cat:'Crèmes',        price:3000,  priceOld:6000 },
+    { id:'creme-vitesse-300',   name:"Crème Vitesse 300g",          cat:'Crèmes',        price:10000 },
+    { id:'creme-vitesse-150',   name:"Crème Vitesse 150g",          cat:'Crèmes',        price:6000 },
     { id:'huile-raff',          name:"Huile Raffermissante",        cat:'Huiles',        price:2000 },
     { id:'caolins',             name:"Caolins",                     cat:'Soins',         price:3000 },
     { id:'kit-fessiers',        name:"Kit Fessiers",                cat:'Kits',          price:11500 },
@@ -2131,6 +2131,71 @@ const NewOrder = (() => {
     { id:'poudre-quasil',       name:"Poudre de Quasil",            cat:'Soins',         price:2500 },
     { id:'kit-antitache',       name:"Kit antitache & anti-acné",   cat:'Kits',          price:8000 }
   ];
+
+  // ─── PROMO — lit config Sheet et applique aux prix des produits ciblés ───
+  // Cache la config chargée depuis apiGet('siteconfig')
+  let _adminSiteConfig = null;
+
+  function _isTodayInRange(dStart, dEnd) {
+    const parse = s => {
+      if (!s) return null;
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d;
+    };
+    const now = new Date();
+    const start = parse(dStart);
+    const end = parse(dEnd);
+    if (start && now < start) return false;
+    if (end) {
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (now > endOfDay) return false;
+    }
+    return true;
+  }
+
+  function _isPromoActive(config) {
+    if (!config) return false;
+    const mode = String(config.promo_mode || '').toLowerCase().trim();
+    if (mode === 'on')  return true;
+    if (mode === 'off') return false;
+    if (mode === 'auto') return _isTodayInRange(config.promo_date_debut, config.promo_date_fin);
+    return config.promo_active === true;
+  }
+
+  const _PROMO_MAP = [
+    { id: 'creme-vitesse-300', priceKey: 'promo_creme_300_prix', barrKey: 'promo_creme_300_prix_barre' },
+    { id: 'creme-vitesse-150', priceKey: 'promo_creme_150_prix', barrKey: 'promo_creme_150_prix_barre' },
+    { id: 'suppo-150',         priceKey: 'promo_suppo_150_prix', barrKey: 'promo_suppo_150_prix_barre' },
+    { id: 'suppo-250',         priceKey: 'promo_suppo_250_prix', barrKey: 'promo_suppo_250_prix_barre' }
+  ];
+
+  function applyPromoToCatalog() {
+    const config = _adminSiteConfig;
+    const promoOn = _isPromoActive(config);
+    _PROMO_MAP.forEach(m => {
+      const p = CATALOG.find(x => x.id === m.id);
+      if (!p) return;
+      if (p._basePrice === undefined) p._basePrice = p.price;
+      const barrPrice = Number(config && config[m.barrKey]) || p._basePrice;
+      const promoPrice = Number(config && config[m.priceKey]) || 0;
+      const hasPromoPrice = promoPrice > 0 && promoPrice < barrPrice;
+      if (promoOn && hasPromoPrice) {
+        p.price = promoPrice;
+        p.priceOld = barrPrice;
+      } else {
+        p.price = barrPrice;
+        delete p.priceOld;
+      }
+    });
+  }
+
+  async function loadAdminSiteConfig() {
+    try {
+      const cfg = await Admin.apiGet('siteconfig');
+      if (cfg && !cfg.error) _adminSiteConfig = cfg;
+    } catch (e) { console.warn('siteconfig fetch failed', e); }
+  }
 
   // Frais de livraison par ville (aligne sur le site vitrine).
   // Auto-appliques quand Mlle Kouassi change la ville dans la modale,
@@ -2156,7 +2221,7 @@ const NewOrder = (() => {
     activeACIndex: -1
   };
 
-  function openModal() {
+  async function openModal() {
     // Reset
     state.cart = {};
     state.manualItems = [];
@@ -2171,6 +2236,9 @@ const NewOrder = (() => {
     $('#noSave').disabled = false;
     $('#noSave').textContent = 'Enregistrer la commande';
     hideAutocomplete();
+    // Charge config (1re fois) puis applique la promo dynamique aux prix produits
+    if (!_adminSiteConfig) await loadAdminSiteConfig();
+    applyPromoToCatalog();
     renderProducts();
     renderCart();
     computeTotals();
