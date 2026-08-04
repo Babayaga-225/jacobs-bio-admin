@@ -2193,7 +2193,8 @@ const NewOrder = (() => {
   async function loadAdminSiteConfig() {
     try {
       const cfg = await Admin.apiGet('siteconfig');
-      if (cfg && !cfg.error) _adminSiteConfig = cfg;
+      // Backend renvoie {success, config: {...}} — on extrait .config si présent
+      if (cfg && !cfg.error) _adminSiteConfig = cfg.config || cfg;
     } catch (e) { console.warn('siteconfig fetch failed', e); }
   }
 
